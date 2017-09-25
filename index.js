@@ -37,10 +37,10 @@ module.exports = function SafeProxy(dispatch) {
   };
   
   const chatHook = e => {
-		if(/^<FONT>!safe<\/FONT>$/i.test(e.message)) {
+    if(/^<FONT>!safe<\/FONT>$/i.test(e.message)) {
       toggleHook();
       return false;
-		}
+    }
   };
 
   try {
