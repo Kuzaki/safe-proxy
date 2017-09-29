@@ -37,10 +37,10 @@ module.exports = function SafeProxy(dispatch) {
     if(stack && stack.length) {
       const hash = crypto.createHash('md5').update(data).digest('hex');
       if(stack.includes(hash)) {
-        //process.nextTick(() => {
+        process.nextTick(() => {
           removeHash(code, hash);
-        //});
-        if(debug) console.log(`[SafeProxy] allowed proxy-delayed packet`, getPacketName(code), silencedStack);
+          if(debug) console.log(`[SafeProxy] allowed proxy-delayed packet`, getPacketName(code), silencedStack);
+        });
         return;
       }
     }
