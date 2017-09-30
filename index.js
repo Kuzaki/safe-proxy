@@ -1,15 +1,17 @@
 /**
-  Safe-Proxy v1.1 by undefined#3394
+  Safe-Proxy v1.1b by undefined#3394
   => Module that prevents proxy from sending crafted/modified packets to TERA Server.
   => TERA Client will still send packets that can get you banned if you change your location, use broker-anywhere, etc..
   => Will break most of modules but also prevent you from getting banned for sending malformed packets to server.
 */
 
 const crypto = require('crypto');
+
+const DEBUG = true;
+const DEBUG_DELAYED = false;
 const DELAY_TIMEOUT = 1000;
 
 module.exports = function SafeProxy(dispatch) {
-  const debug = false;
   let enabled = true;
   
   const silencedStack = {};
@@ -33,19 +35,21 @@ module.exports = function SafeProxy(dispatch) {
   const packetHook = (type, code, data) => {
     if(!enabled) return;
     
-    const stack = silencedStack[code];
-    if(stack && stack.length) {
-      const hash = crypto.createHash('md5').update(data).digest('hex');
-      if(stack.includes(hash)) {
-        process.nextTick(() => {
-          removeHash(code, hash);
-          if(debug) console.log(`[SafeProxy] allowed proxy-delayed packet`, getPacketName(code), silencedStack);
-        });
-        return;
+    if(type === 'crafted') {
+      const stack = silencedStack[code];
+      if(stack && stack.length) {
+        const hash = crypto.createHash('md5').update(data).digest('hex');
+        if(stack.includes(hash)) {
+          process.nextTick(() => {
+            removeHash(code, hash);
+          });
+          if(DEBUG_DELAYED) console.log('[SafeProxy] allowed proxy-delayed packet', getPacketName(code));
+          return;
+        }
       }
     }
     
-    if(debug) console.log(`[SafeProxy] blocked proxy-${type} outgoing packet`, getPacketName(code));
+    if(DEBUG) console.log(`[SafeProxy] blocked proxy-${type} outgoing packet`, getPacketName(code));
     return false;
   };
   
